@@ -38,9 +38,9 @@
 - [x] Monorepo dirs created (`backend/`, `frontend/`, `docs/`)
 - [x] `requirements.txt` w/ pinned deps (datasets, silero-vad, whisperx, jiwer, langgraph, supabase)
 - [x] `package.json` w/ deps (react, vite, tailwindcss, wavesurfer.js, @supabase/supabase-js, vitest)
-- [ ] Supabase project live, keys in `.env`
-- [ ] DB migration executed — table, enum, indexes, trigger, RLS all applied
-- [ ] `audio_chunks` bucket created, public read confirmed
+- [x] Supabase project live, keys in `.env`
+- [x] DB migration executed — table, enum, indexes, trigger, RLS all applied
+- [x] `audio_chunks` bucket created, public read confirmed
 - [x] `docker-compose.yml` builds & runs both services
 - [x] `.env.example` committed (no real keys)
 
@@ -56,10 +56,10 @@
 3. Yield dicts matching test contract. Run tests, make green.
 
 ### Checklist
-- [ ] `test_fetch_hf.py` written & passing (mocked HF)
-- [ ] `fetch_hf.py` streams data, yields correct dict shape
-- [ ] `speaker_id` extracted from dataset metadata
-- [ ] No local file downloads (streaming only)
+- [x] `test_fetch_hf.py` written & passing (mocked HF)
+- [x] `fetch_hf.py` streams data, yields correct dict shape
+- [x] `speaker_id` extracted from dataset metadata
+- [x] No local file downloads (streaming only)
 
 ---
 
