@@ -154,14 +154,14 @@
 5. Run tests, make green.
 
 ### Checklist
-- [ ] `test_graph.py` written & passing
-- [ ] `PipelineState` TypedDict defined w/ all intermediate fields
-- [ ] Graph compiles without error
-- [ ] Happy path: fetch -> vad -> whisperx -> wer pass -> insert
-- [ ] WER fail path: evaluate_wer -> skip (no insert)
-- [ ] Error path: any node throws -> log + skip -> next chunk
-- [ ] `BATCH_SIZE` / `MAX_WORKERS` env vars respected
-- [ ] `main.py` runs end-to-end
+- [x] `test_graph.py` written & passing
+- [x] `PipelineState` TypedDict defined w/ all intermediate fields
+- [x] Graph compiles without error
+- [x] Happy path: fetch -> vad -> whisperx -> wer pass -> insert
+- [x] WER fail path: evaluate_wer -> skip (no insert)
+- [x] Error path: any node throws -> log + skip -> next chunk
+- [x] `BATCH_SIZE` / `MAX_WORKERS` env vars respected
+- [x] `main.py` runs end-to-end
 
 ---
 
