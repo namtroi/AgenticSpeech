@@ -73,11 +73,11 @@
 3. Merge/split VAD segments to enforce 5-15s range. Return list matching test contract. Run tests, make green.
 
 ### Checklist
-- [ ] `test_process_vad.py` written & passing (dummy tensors)
-- [ ] Silero VAD model loads correctly
-- [ ] Chunks guaranteed 5-15s (merge short, split long)
-- [ ] Silent regions stripped
-- [ ] `duration` field computed per chunk
+- [x] `test_process_vad.py` written & passing (dummy tensors)
+- [x] Silero VAD model loads correctly
+- [x] Chunks guaranteed 5-15s (merge short, split long)
+- [x] Silent regions stripped
+- [x] `duration` field computed per chunk
 
 ---
 
