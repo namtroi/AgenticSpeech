@@ -36,6 +36,7 @@ graph TD
 - **Database & Storage:** Supabase (PostgreSQL, Storage) - Free Tier
 - **Frontend / HITL UI:** React (Vite), TailwindCSS, `wavesurfer.js` (v7+)
 - **Hosting:** Vercel (Frontend), Supabase Cloud (Backend)
+- **Testing (TDD):** `pytest` (Backend), `vitest` + `testing-library/react` (Frontend)
 
 ---
 
@@ -80,3 +81,22 @@ graph TD
      - `Space`: Play / Pause.
      - `Enter`: Save edits, update `status = 'approved'` -> load next.
      - `Delete`: Update `status = 'rejected'` -> load next.
+
+---
+
+## 6. Deployment & Development Model
+- **Pattern: Decoupled Monorepo.** The frontend and backend are completely decoupled services that only interact via Supabase (Database/Storage). This is not a classic Monolith, but closer to a lightweight Microservices event-driven model.
+- **Docker Packaging:** 
+  - **Backend (Python):** Highly recommended and necessary. Python AI environments (PyTorch, WhisperX, CUDA, FFmpeg) are incredibly complex to standardize across OSes. Docker ensures the ML environment is strictly isolated and reproducible.
+  - **Frontend (React/Vite):** Optional for development (`npm run dev` is sufficient), but recommended using standard Dockerfiles for production parity. 
+- **Tooling:** Use `docker-compose.yml` at the root directory to spin up the entire pipeline seamlessly.
+
+---
+
+## 7. Testing Strategy (TDD)
+- **TDD Requirement:** All core logic must be written with tests *before* or *alongside* implementation to ensure high reliability.
+- **Backend (Python - `pytest`):**
+  - **Unit Tests:** Mock Hugging Face dataset fetching. Test Silero VAD chunking logic on dummy tensors. Test WER calculation logic (`jiwer`).
+  - **Integration Tests:** Test LangGraph node transitions (State Machine). Use local file fixtures to mock audio processing outputs before inserting into a test Supabase Project.
+- **Frontend (React - `vitest` + `@testing-library/react`):**
+  - **Unit Tests:** Test Audio Player component rendering. Mock `supabase-js` to ensure the correct `approved` or `rejected` API payload is fired on Keyboard interactions (Space, Enter, Delete).
