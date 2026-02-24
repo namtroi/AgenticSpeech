@@ -130,12 +130,12 @@
 4. Run tests, make green.
 
 ### Checklist
-- [ ] `test_insert_db.py` written & passing (mocked supabase)
-- [ ] Audio converted to WAV bytes in-memory (no temp files)
-- [ ] Upload path follows `{dataset_id}/{uuid}.wav` convention
-- [ ] Public URL retrieved after upload
-- [ ] DB row includes all columns: id, dataset_id, speaker_id, audio_url, original_text, aligned_text_with_timestamps, wer_score, duration, status
-- [ ] `status` defaults to `pending_review`
+- [x] `test_insert_db.py` written & passing (mocked supabase)
+- [x] Audio converted to WAV bytes in-memory (no temp files)
+- [x] Upload path follows `{dataset_id}/{uuid}.wav` convention
+- [x] Public URL retrieved after upload
+- [x] DB row includes all columns: id, dataset_id, speaker_id, audio_url, original_text, aligned_text_with_timestamps, wer_score, duration, status
+- [x] `status` defaults to `pending_review`
 
 ---
 
