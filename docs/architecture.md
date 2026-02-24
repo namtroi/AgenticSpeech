@@ -50,7 +50,7 @@ graph TD
 - **VAD (Voice Activity Detection):** `silero-vad`. Strip silence. Split stream -> 5-15s chunks.
 - **ASR & Alignment:** `whisperx` (`faster-whisper` backend).
   - Transcribe chunks.
-  - Run phoneme alignment -> exact word-level ms timestamps (start/end).
+  - Run phoneme alignment -> exact word-level timestamps in seconds (start/end floats).
 - **AI Quality Gate (AI-as-a-Judge):** `jiwer` library.
   - Calculate WER (Word Error Rate) vs original LibriTTS-R text.
   - **Rule:** `if WER > 15% -> discard chunk`. Skips bad data, saves human time.
@@ -60,12 +60,15 @@ graph TD
 ## 4. Orchestration & Storage Layer
 - **Workflow Orchestrator:** `langgraph`. Stateful compiled graph.
   - **Nodes Flow:** `fetch_hf_stream` -> `process_vad` -> `align_whisperx` -> `evaluate_wer` -> `insert_db`.
+  - **Error Handling:** LangGraph graph includes an `on_error` edge. If any node (VAD, WhisperX, upload) throws, the chunk is logged with the error reason and skipped — the pipeline continues to the next item in the stream. Discarded chunks (WER > 15%) are silently dropped (not stored) since the source dataset is always re-streamable.
+  - **Concurrency:** Pipeline processes chunks sequentially by default (GPU-bound). Batch size and parallelism can be tuned via environment variables (`BATCH_SIZE`, `MAX_WORKERS`) based on available GPU memory and Supabase free-tier API rate limits (~500 req/min).
 - **Database & Object Storage:** Supabase (PostgreSQL + S3-compatible storage).
 - **Interaction:** `supabase-py`. Upload audio chunk to Storage, save metadata to DB.
 - **Table `speech_chunks`:**
-  - `id`: UUID, `dataset_id`: String, `audio_url`: String
+  - `id`: UUID, `dataset_id`: String, `speaker_id`: String (nullable), `audio_url`: String
   - `original_text`: Text, `aligned_text_with_timestamps`: JSONB
-  - `wer_score`: Float, `status`: Enum (`pending_review`, `approved`, `rejected`)
+  - `wer_score`: Float, `duration`: Float, `status`: Enum (`pending_review`, `approved`, `rejected`)
+  - See `database_schema.md` for full schema, indexes, RLS policies, and triggers.
 
 ---
 

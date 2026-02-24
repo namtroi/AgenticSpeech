@@ -10,10 +10,12 @@ Source of truth for pipeline state and metadata. Drives HITL UI via Supabase JS 
 | :--- | :--- | :--- | :--- |
 | `id` | `uuid` | PK, default `uuid_generate_v4()` | Unique chunk identifier. |
 | `dataset_id` | `text` | NOT NULL | Source dataset (e.g., `parler-tts/libritts_r`). |
+| `speaker_id` | `text` | NULL | Speaker identifier from LibriTTS-R (useful for speaker-conditioned TTS). |
 | `audio_url` | `text` | NOT NULL | Public URL to `.wav` file in Supabase Storage. |
 | `original_text` | `text` | NOT NULL | Ground truth text from source dataset. |
 | `aligned_text_with_timestamps`| `jsonb` | NOT NULL | WhisperX alignment output (see format below). |
 | `wer_score` | `real` (Float)| NOT NULL | Word Error Rate computed by `jiwer` (0.0 to 1.0). |
+| `duration` | `real` (Float)| NOT NULL | Audio chunk duration in seconds (5.0 - 15.0). |
 | `status` | `chunk_status` | DEFAULT `'pending_review'` | Enum state. |
 | `created_at` | `timestamptz` | DEFAULT `now()` | Record creation time (Python ingest). |
 | `updated_at` | `timestamptz` | DEFAULT `now()` | Last modification time (UI review). |
@@ -27,11 +29,56 @@ CREATE TYPE chunk_status AS ENUM (
 );
 ```
 
+### Indexes
+```sql
+-- HITL UI queries by status constantly
+CREATE INDEX idx_speech_chunks_status ON speech_chunks (status);
+
+-- Useful for filtering/grouping by speaker
+CREATE INDEX idx_speech_chunks_speaker_id ON speech_chunks (speaker_id);
+```
+
+### Trigger: Auto-update `updated_at`
+```sql
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_updated_at
+  BEFORE UPDATE ON speech_chunks
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+```
+
+### Row-Level Security (RLS) Policies
+```sql
+ALTER TABLE speech_chunks ENABLE ROW LEVEL SECURITY;
+
+-- Frontend (anon key): read pending_review rows
+CREATE POLICY "Allow public read of pending chunks"
+  ON speech_chunks FOR SELECT
+  USING (true);
+
+-- Frontend (anon key): update status and timestamps during review
+CREATE POLICY "Allow public update for review actions"
+  ON speech_chunks FOR UPDATE
+  USING (true)
+  WITH CHECK (status IN ('approved', 'rejected'));
+
+-- Backend (service_role key): full insert access
+CREATE POLICY "Allow service_role insert"
+  ON speech_chunks FOR INSERT
+  WITH CHECK (true);
+```
+
 ---
 
 ## 2. JSONB Structure: `aligned_text_with_timestamps`
 
-**Contract:** Array of word objects. Used by Next.js/Wavesurfer.js to map bounding boxes (Regions) overlaying the audio waveform.
+**Contract:** Array of word objects. Used by React/Wavesurfer.js to map bounding boxes (Regions) overlaying the audio waveform.
 
 ```json
 [

@@ -13,7 +13,7 @@
 - **Voice Activity Detection (VAD):** Use `silero-vad` (PyTorch). It is the fastest and most accurate open-source VAD. Use it to strip absolute silence and split the audio stream into 5 to 15-second chunks.
 - **ASR & Forced Alignment:** Use `whisperx` (which runs on the highly optimized `faster-whisper` backend).
 - Pass the VAD chunks through WhisperX to generate transcriptions.
-- Use its built-in phoneme alignment models to extract exact word-level timestamps (start and end times in milliseconds).
+- Use its built-in phoneme alignment models to extract exact word-level timestamps (start and end times in seconds as floats).
 
 - **Automated Quality Gate (AI-as-a-Judge):** Use the `jiwer` Python library to calculate the Word Error Rate (WER) by comparing the WhisperX output against the original LibriTTS-R text.
 - Rule: If WER > 15%, automatically discard the chunk to save human review time.
@@ -26,9 +26,9 @@
 - **Database & Backend:** Use `supabase` (PostgreSQL) via the `supabase-py` client.
 - Store metadata in a `speech_chunks` table containing: `id` (UUID), `dataset_id`, `audio_url` (upload audio chunks to Supabase Storage), `original_text`, `aligned_text_with_timestamps` (JSONB format), `wer_score` (Float), and `status` (Enum: 'pending_review', 'approved', 'rejected').
 
-### 4. Human-in-the-Loop (HITL) Validation UI (Next.js/React)
+### 4. Human-in-the-Loop (HITL) Validation UI (React)
 
-- **Framework:** Use `nextjs` (App Router) integrated with the `@supabase/supabase-js` client.
+- **Framework:** Use `React` (via Vite) with `TailwindCSS`, integrated with the `@supabase/supabase-js` client.
 - **Core Audio Component:** Use `wavesurfer.js` (version 7+) along with its `Regions` plugin.
 - **Workflow & Interactions:**
 
