@@ -91,11 +91,10 @@
 3. Return output matching test contract. Run tests, make green.
 
 ### Checklist
-- [ ] `test_align_whisperx.py` written & passing (mocked whisperx)
-- [ ] Transcription runs on chunk array
-- [ ] Phoneme alignment returns word-level timestamps (seconds, float)
-- [ ] Confidence scores included per word
-- [ ] Output matches `aligned_text_with_timestamps` JSONB contract
+- [x] `test_align_whisperx.py` written & passing (mocked models)
+- [x] WhisperX loads natively locally.
+- [x] Result dictionary includes JSONB format array `aligned_words` of `[{ word, start, end, confidence }]`
+- [x] Output matches `aligned_text_with_timestamps` JSONB contract
 
 ---
 
