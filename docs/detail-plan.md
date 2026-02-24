@@ -108,10 +108,10 @@
 3. Return `{ wer_score, pass: bool }`. Pass = WER <= 0.15. Run tests, make green.
 
 ### Checklist
-- [ ] `test_evaluate_wer.py` written & passing
-- [ ] WER calculated correctly via jiwer
-- [ ] Threshold at 15% (0.15) enforced
-- [ ] Failing chunks return `pass: False` (will be skipped by graph)
+- [x] `test_evaluate_wer.py` written & passing
+- [x] WER calculated correctly via jiwer
+- [x] Threshold at 15% (0.15) enforced
+- [x] Failing chunks return `pass: False` (will be skipped by graph)
 
 ---
 
