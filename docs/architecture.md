@@ -61,7 +61,7 @@ graph TD
 - **Workflow Orchestrator:** `langgraph`. Stateful compiled graph.
   - **Nodes Flow:** `fetch_hf_stream` -> `process_vad` -> `align_whisperx` -> `evaluate_wer` -> `insert_db`.
   - **Error Handling:** LangGraph graph includes an `on_error` edge. If any node (VAD, WhisperX, upload) throws, the chunk is logged with the error reason and skipped — the pipeline continues to the next item in the stream. Discarded chunks (WER > 15%) are silently dropped (not stored) since the source dataset is always re-streamable.
-  - **Concurrency:** Pipeline processes chunks sequentially by default (GPU-bound). Batch size and parallelism can be tuned via environment variables (`BATCH_SIZE`, `MAX_WORKERS`) based on available GPU memory and Supabase free-tier API rate limits (~500 req/min).
+  - **Concurrency:** Pipeline processes chunks sequentially by default (CPU-bound). Batch size and parallelism can be tuned via environment variables (`BATCH_SIZE`, `MAX_WORKERS`) based on available resources and Supabase free-tier API rate limits (~500 req/min).
 - **Database & Object Storage:** Supabase (PostgreSQL + S3-compatible storage).
 - **Interaction:** `supabase-py`. Upload audio chunk to Storage, save metadata to DB.
 - **Table `speech_chunks`:**
@@ -90,7 +90,7 @@ graph TD
 ## 6. Deployment & Development Model
 - **Pattern: Decoupled Monorepo.** The frontend and backend are completely decoupled services that only interact via Supabase (Database/Storage). This is not a classic Monolith, but closer to a lightweight Microservices event-driven model.
 - **Docker Packaging:** 
-  - **Backend (Python):** Highly recommended and necessary. Python AI environments (PyTorch, WhisperX, CUDA, FFmpeg) are incredibly complex to standardize across OSes. Docker ensures the ML environment is strictly isolated and reproducible.
+  - **Backend (Python):** Highly recommended and necessary. Python AI environments (PyTorch, WhisperX, FFmpeg) are incredibly complex to standardize across OSes. Docker ensures the ML environment is strictly isolated and reproducible. Runs on CPU (GPU optional for faster throughput).
   - **Frontend (React/Vite):** Optional for development (`npm run dev` is sufficient), but recommended using standard Dockerfiles for production parity. 
 - **Tooling:** Use `docker-compose.yml` at the root directory to spin up the entire pipeline seamlessly.
 

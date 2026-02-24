@@ -35,14 +35,14 @@
 6. Setup `docker-compose.yml` — backend service (GPU passthrough) + frontend service.
 
 ### Checklist
-- [ ] Monorepo dirs created (`backend/`, `frontend/`, `docs/`)
-- [ ] `requirements.txt` w/ pinned deps (datasets, silero-vad, whisperx, jiwer, langgraph, supabase)
-- [ ] `package.json` w/ deps (react, vite, tailwindcss, wavesurfer.js, @supabase/supabase-js, vitest)
+- [x] Monorepo dirs created (`backend/`, `frontend/`, `docs/`)
+- [x] `requirements.txt` w/ pinned deps (datasets, silero-vad, whisperx, jiwer, langgraph, supabase)
+- [x] `package.json` w/ deps (react, vite, tailwindcss, wavesurfer.js, @supabase/supabase-js, vitest)
 - [ ] Supabase project live, keys in `.env`
 - [ ] DB migration executed — table, enum, indexes, trigger, RLS all applied
 - [ ] `audio_chunks` bucket created, public read confirmed
-- [ ] `docker-compose.yml` builds & runs both services
-- [ ] `.env.example` committed (no real keys)
+- [x] `docker-compose.yml` builds & runs both services
+- [x] `.env.example` committed (no real keys)
 
 ---
 
@@ -51,9 +51,9 @@
 **Goal:** Stream audio + text from HuggingFace. No disk download.
 
 ### Steps
-1. `backend/src/nodes/fetch_hf.py` — use `datasets.load_dataset("parler-tts/libritts_r", streaming=True)`.
-2. Yield dicts: `{ audio_array, sample_rate, original_text, dataset_id, speaker_id }`.
-3. Write tests first (`backend/tests/test_fetch_hf.py`). Mock HF dataset, assert output shape.
+1. **TEST FIRST:** `backend/tests/test_fetch_hf.py` — mock HF dataset, assert output yields dict w/ keys `{ audio_array, sample_rate, original_text, dataset_id, speaker_id }`. Assert streaming (no disk write).
+2. `backend/src/nodes/fetch_hf.py` — use `datasets.load_dataset("parler-tts/libritts_r", streaming=True)`.
+3. Yield dicts matching test contract. Run tests, make green.
 
 ### Checklist
 - [ ] `test_fetch_hf.py` written & passing (mocked HF)
@@ -68,10 +68,9 @@
 **Goal:** Split raw audio into 5-15s voiced chunks via Silero VAD.
 
 ### Steps
-1. `backend/src/nodes/process_vad.py` — load silero-vad model, run on audio tensor.
-2. Merge/split VAD segments to enforce 5-15s range.
-3. Return list of `{ chunk_array, start_time, end_time, duration, sample_rate }`.
-4. TDD: `backend/tests/test_process_vad.py`. Feed dummy sine wave tensor, assert chunk durations in range.
+1. **TEST FIRST:** `backend/tests/test_process_vad.py` — feed dummy sine wave tensor, assert output is list of `{ chunk_array, start_time, end_time, duration, sample_rate }`. Assert all durations 5-15s. Assert silent regions stripped.
+2. `backend/src/nodes/process_vad.py` — load silero-vad model, run on audio tensor.
+3. Merge/split VAD segments to enforce 5-15s range. Return list matching test contract. Run tests, make green.
 
 ### Checklist
 - [ ] `test_process_vad.py` written & passing (dummy tensors)
@@ -87,9 +86,9 @@
 **Goal:** Transcribe chunks, get word-level timestamps (seconds).
 
 ### Steps
-1. `backend/src/nodes/align_whisperx.py` — load whisperx model, transcribe chunk, run alignment.
-2. Output: `{ aligned_words: [{ word, start, end, confidence }], transcribed_text }`.
-3. TDD: `backend/tests/test_align_whisperx.py`. Mock whisperx output, assert JSONB structure matches contract.
+1. **TEST FIRST:** `backend/tests/test_align_whisperx.py` — mock whisperx model. Assert output `{ aligned_words: [{ word, start, end, confidence }], transcribed_text }`. Assert structure matches `aligned_text_with_timestamps` JSONB contract.
+2. `backend/src/nodes/align_whisperx.py` — load whisperx model, transcribe chunk, run alignment.
+3. Return output matching test contract. Run tests, make green.
 
 ### Checklist
 - [ ] `test_align_whisperx.py` written & passing (mocked whisperx)
@@ -105,9 +104,9 @@
 **Goal:** Auto-discard bad chunks (WER > 15%).
 
 ### Steps
-1. `backend/src/nodes/evaluate_wer.py` — use `jiwer.wer()` to compare `transcribed_text` vs `original_text`.
-2. Return `{ wer_score, pass: bool }`. Pass = WER <= 0.15.
-3. TDD: `backend/tests/test_evaluate_wer.py`. Test exact match (0.0), partial match, total mismatch (1.0), edge case at 0.15.
+1. **TEST FIRST:** `backend/tests/test_evaluate_wer.py` — test cases: exact match (WER=0.0, pass=True), partial match, total mismatch (WER=1.0, pass=False), edge case at boundary (WER=0.15 pass=True, WER=0.16 pass=False).
+2. `backend/src/nodes/evaluate_wer.py` — use `jiwer.wer()` to compare `transcribed_text` vs `original_text`.
+3. Return `{ wer_score, pass: bool }`. Pass = WER <= 0.15. Run tests, make green.
 
 ### Checklist
 - [ ] `test_evaluate_wer.py` written & passing
@@ -122,13 +121,14 @@
 **Goal:** Upload audio to Supabase Storage, insert metadata row to DB.
 
 ### Steps
-1. `backend/src/nodes/insert_db.py`:
+1. **TEST FIRST:** `backend/tests/test_insert_db.py` — mock supabase client. Assert upload path = `{dataset_id}/{uuid}.wav`. Assert row payload has all columns (id, dataset_id, speaker_id, audio_url, original_text, aligned_text_with_timestamps, wer_score, duration, status=pending_review).
+2. `backend/src/utils/supabase_client.py` — init client from env vars (service_role key).
+3. `backend/src/nodes/insert_db.py`:
    - Convert chunk array to `.wav` bytes in memory (use `soundfile` or `scipy.io.wavfile`).
    - Upload to `audio_chunks/{dataset_id}/{uuid}.wav` via `supabase-py` storage.
    - Get public URL.
    - Insert row into `speech_chunks` table w/ all fields.
-2. `backend/src/utils/supabase_client.py` — init client from env vars (service_role key).
-3. TDD: `backend/tests/test_insert_db.py`. Mock supabase client, assert correct upload path & row payload.
+4. Run tests, make green.
 
 ### Checklist
 - [ ] `test_insert_db.py` written & passing (mocked supabase)
@@ -145,13 +145,14 @@
 **Goal:** Wire all nodes into compiled stateful graph w/ error handling.
 
 ### Steps
-1. `backend/src/graph.py`:
+1. **TEST FIRST:** `backend/tests/test_graph.py` — test happy path (fetch->vad->whisperx->wer pass->insert). Test WER fail path (skips insert). Test error path (node throws -> log + skip -> next chunk). Test env var `BATCH_SIZE`/`MAX_WORKERS` respected.
+2. `backend/src/graph.py`:
    - Define `PipelineState` TypedDict (carries data between nodes).
    - Add nodes: `fetch_hf_stream` -> `process_vad` -> `align_whisperx` -> `evaluate_wer` -> conditional edge (pass/fail) -> `insert_db`.
    - Add `on_error` edge: log error, skip chunk, continue stream.
-2. Add env var support: `BATCH_SIZE`, `MAX_WORKERS`.
-3. `backend/src/main.py` — entry point. Load env, compile graph, run.
-4. TDD: `backend/tests/test_graph.py`. Test node transitions, test error edge triggers on exception, test WER fail skips insert.
+3. Add env var support: `BATCH_SIZE`, `MAX_WORKERS`.
+4. `backend/src/main.py` — entry point. Load env, compile graph, run.
+5. Run tests, make green.
 
 ### Checklist
 - [ ] `test_graph.py` written & passing
@@ -190,29 +191,30 @@
 **Goal:** Waveform player + word regions + keyboard-first review workflow.
 
 ### Steps
-1. `frontend/src/hooks/useChunkReview.ts`:
+1. **TESTS FIRST:** `frontend/src/tests/`:
+   - `useChunkReview.test.ts` — mock supabase. Assert fetches 1 row where status=pending_review. Assert `approve()` sends status=approved payload. Assert `reject()` sends status=rejected. Assert auto-loads next after each action.
+   - `WaveformPlayer.test.tsx` — mock wavesurfer. Assert regions drawn from JSONB data w/ correct start/end. Assert region edges draggable.
+   - `App.test.tsx` — simulate keyboard: Space fires play/pause, Enter fires approve, Delete fires reject.
+2. `frontend/src/hooks/useChunkReview.ts`:
    - Fetch 1 row where `status = 'pending_review'`.
    - Expose `approve()`, `reject()`, `updateTimestamps()` mutations.
    - Auto-load next chunk after approve/reject.
-2. `frontend/src/components/WaveformPlayer.tsx`:
+3. `frontend/src/components/WaveformPlayer.tsx`:
    - Init `wavesurfer.js` w/ Regions plugin.
    - Load audio from `audio_url`.
    - Draw word regions from `aligned_text_with_timestamps` JSONB.
    - Draggable region edges -> update local state.
    - Show word text labels on regions.
-3. `frontend/src/components/ReviewControls.tsx`:
+4. `frontend/src/components/ReviewControls.tsx`:
    - Display WER score, duration, dataset_id, speaker_id.
    - Show pending count.
-4. `frontend/src/App.tsx`:
+5. `frontend/src/App.tsx`:
    - Compose WaveformPlayer + ReviewControls.
    - Wire keyboard listeners (global):
      - `Space` -> play/pause
      - `Enter` -> save edits + approve + load next
      - `Delete` -> reject + load next
-5. TDD: `frontend/src/tests/`:
-   - `useChunkReview.test.ts` — mock supabase, assert correct payloads on approve/reject.
-   - `WaveformPlayer.test.tsx` — mock wavesurfer, assert regions drawn from JSONB data.
-   - `App.test.tsx` — simulate keyboard events, assert approve/reject calls fire.
+6. Run tests, make green.
 
 ### Checklist
 - [ ] `useChunkReview.test.ts` passing (mocked supabase)
@@ -235,9 +237,9 @@
 **Goal:** Containerize both services. One-command startup.
 
 ### Steps
-1. `backend/Dockerfile`: Python 3.11, CUDA base image, install ffmpeg, pip install requirements.
+1. `backend/Dockerfile`: Python 3.11, install ffmpeg, pip install requirements.
 2. `frontend/Dockerfile`: Node 20 alpine, npm install, vite build, serve static.
-3. `docker-compose.yml`: backend (GPU runtime) + frontend (port 3000). Env vars from `.env`.
+3. `docker-compose.yml`: backend + frontend (port 3000). Env vars from `.env`.
 
 ### Checklist
 - [ ] `docker build` succeeds for backend
@@ -245,7 +247,7 @@
 - [ ] `docker-compose up` starts both services
 - [ ] Backend can reach Supabase from container
 - [ ] Frontend serves on localhost:3000
-- [ ] GPU passthrough works for backend (nvidia runtime)
+- [ ] Backend runs on CPU (no GPU required)
 
 ---
 
