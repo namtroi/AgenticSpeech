@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from "react";
 import WaveSurfer from 'wavesurfer.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js'
 import type { SpeechChunk, AlignedWord } from '../types/database'
@@ -14,7 +14,8 @@ export const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
 }) => {
   const waveformRef = useRef<HTMLDivElement>(null)
   const wavesurferRef = useRef<WaveSurfer | null>(null)
-  const regionsRef = useRef<any>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const regionsRef = useRef<any>(null);
   
   // Keep local sync so drag events don't lag React state loops
   const localWordsRef = useRef<AlignedWord[]>([])
@@ -86,7 +87,8 @@ export const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
     return () => {
       ws.destroy()
     }
-  }, [chunk.audio_url]) // Re-mount the wavesurfer only when chunk underlying audio swaps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chunk.audio_url]); // Re-mount the wavesurfer only when chunk underlying audio swaps
 
   // Listen for spacebar to play/pause at the global window layer
   // (Prevents needing to click the explicit canvas repeatedly)

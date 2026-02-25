@@ -29,9 +29,10 @@ export function useChunkReview() {
       }
 
       setCurrentChunk(data as SpeechChunk)
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch pending chunk.')
-      setCurrentChunk(null)
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      setError(errorMsg || "Failed to fetch pending chunk.");
+      setCurrentChunk(null);
     } finally {
       setLoading(false)
     }
@@ -58,9 +59,10 @@ export function useChunkReview() {
       
       // Load next immediately
       await fetchNextPending()
-    } catch (err: any) {
-      setError(err.message)
-      setLoading(false)
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      setError(errorMsg);
+      setLoading(false);
     }
   }
 
@@ -77,9 +79,10 @@ export function useChunkReview() {
       if (sbError) throw new Error(sbError.message)
       
       await fetchNextPending()
-    } catch (err: any) {
-      setError(err.message)
-      setLoading(false)
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      setError(errorMsg);
+      setLoading(false);
     }
   }
 
@@ -104,8 +107,9 @@ export function useChunkReview() {
         .eq('id', currentChunk.id)
         
       if (sbError) throw new Error(sbError.message)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      setError(errorMsg);
     }
   }
 
