@@ -9,7 +9,7 @@ def fetch_hf_stream() -> Iterator[Dict[str, Any]]:
     Yields chunks formatted for the AgenticSpeech pipeline.
     """
     # Load dataset in streaming mode
-    dataset = load_dataset("parler-tts/libritts_r", split="train", streaming=True)
+    dataset = load_dataset("mythicinfinity/libritts", name="dev", split="dev.clean", streaming=True)
 
     for item in dataset:
         # Extract required fields based on the schema mapping tests

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useChunkReview } from './hooks/useChunkReview'
 import { WaveformPlayer } from './components/WaveformPlayer'
 import { ReviewControls } from './components/ReviewControls'

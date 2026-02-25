@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { WaveformPlayer } from '../components/WaveformPlayer'
-import { SpeechChunk } from '../types/database'
+import type { SpeechChunk } from '../types/database'
 
 // Mock the heavy wavesurfer library objects entirely so it doesnt blow up our JS Dom
 const mockAddRegion = vi.fn()

@@ -241,12 +241,12 @@
 3. `docker-compose.yml`: backend + frontend (port 3000). Env vars from `.env`.
 
 ### Checklist
-- [ ] `docker build` succeeds for backend
-- [ ] `docker build` succeeds for frontend
-- [ ] `docker-compose up` starts both services
-- [ ] Backend can reach Supabase from container
-- [ ] Frontend serves on localhost:3000
-- [ ] Backend runs on CPU (no GPU required)
+- [x] `docker build` succeeds for backend
+- [x] `docker build` succeeds for frontend
+- [x] `docker-compose up` starts both services
+- [x] Backend can reach Supabase from container
+- [x] Frontend serves on localhost:3000
+- [x] Backend runs on CPU (no GPU required)
 
 ---
 

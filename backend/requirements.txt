@@ -1,8 +1,11 @@
 datasets==3.0.0
-silero-vad==4.0.0
+silero-vad==5.1.2
 whisperx
 jiwer==3.0.4
 langgraph==0.1.1
-supabase==2.5.0
+pyannote.audio>=3.3.1
+python-dotenv
+supabase
 soundfile
 scipy
+librosa==0.10.1
