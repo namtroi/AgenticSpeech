@@ -216,18 +216,18 @@
 6. Run tests, make green.
 
 ### Checklist
-- [ ] `useChunkReview.test.ts` passing (mocked supabase)
-- [ ] `WaveformPlayer.test.tsx` passing (mocked wavesurfer)
-- [ ] `App.test.tsx` passing (keyboard events)
-- [ ] Waveform renders from audio URL
-- [ ] Word regions drawn w/ correct start/end positions
-- [ ] Region edges draggable, text editable
-- [ ] `Space` toggles play/pause
-- [ ] `Enter` saves edits -> approve -> loads next
-- [ ] `Delete` rejects -> loads next
-- [ ] Updated timestamps serialized back to JSONB on save
-- [ ] WER score + metadata displayed
-- [ ] Empty state shown when no pending chunks
+- [x] `useChunkReview.test.ts` passing (mocked supabase)
+- [x] `WaveformPlayer.test.tsx` passing (mocked wavesurfer)
+- [x] `App.test.tsx` passing (keyboard events)
+- [x] Waveform renders from audio URL
+- [x] Word regions drawn w/ correct start/end positions
+- [x] Region edges draggable, text editable
+- [x] `Space` toggles play/pause
+- [x] `Enter` saves edits -> approve -> loads next
+- [x] `Delete` rejects -> loads next
+- [x] Updated timestamps serialized back to JSONB on save
+- [x] WER score + metadata displayed
+- [x] Empty state shown when no pending chunks
 
 ---
 

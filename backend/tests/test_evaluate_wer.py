@@ -1,4 +1,3 @@
-import pytest
 from src.nodes.evaluate_wer import evaluate_wer
 
 def test_evaluate_wer_exact_match():
