@@ -177,11 +177,11 @@
 5. Setup vitest + @testing-library/react.
 
 ### Checklist
-- [ ] Vite + React + TS builds clean
-- [ ] TailwindCSS working (test w/ utility class)
-- [ ] Supabase client connects (test w/ simple query)
-- [ ] Vitest runs, sample test passes
-- [ ] Env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- [x] Vite + React + TS builds clean
+- [x] TailwindCSS working (test w/ utility class)
+- [x] Supabase client connects (test w/ simple query)
+- [x] Vitest runs, sample test passes
+- [x] Env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 
 ---
 
