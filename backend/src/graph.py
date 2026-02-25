@@ -2,7 +2,6 @@ from typing import TypedDict, Any, List, Dict
 from langgraph.graph import StateGraph, START, END
 
 # Import actual pipeline execution nodes
-from src.nodes.process_vad import process_vad
 from src.nodes.align_whisperx import align_whisperx
 from src.nodes.evaluate_wer import evaluate_wer
 from src.nodes.insert_db import insert_db
@@ -57,14 +56,12 @@ def get_compiled_graph():
     builder = StateGraph(PipelineState)
 
     # Define Nodes
-    builder.add_node("process_vad", process_vad)
     builder.add_node("align_whisperx", align_whisperx)
     builder.add_node("evaluate_wer", evaluate_wer)
     builder.add_node("insert_db", insert_db)
 
     # Define primary linear traversal vectors
-    builder.add_edge(START, "process_vad")
-    builder.add_edge("process_vad", "align_whisperx")
+    builder.add_edge(START, "align_whisperx")
     builder.add_edge("align_whisperx", "evaluate_wer")
 
     # Conditional branching logic terminating off `pass` boolean flag

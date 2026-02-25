@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from src.graph import get_compiled_graph
 from src.nodes.fetch_hf import fetch_hf_stream
+from src.nodes.process_vad import process_vad
 
 
 def main():
@@ -37,7 +38,14 @@ def main():
 
     # We iterate over the infinite stream, collecting items up to BATCH_SIZE
     for data_dict in stream_generator:
-        batch.append(data_dict)
+        chunks = process_vad(data_dict)
+        for chunk in chunks:
+            # Propagate the parent metadata into each separate chunk state
+            chunk["original_text"] = data_dict.get("original_text", "")
+            chunk["dataset_id"] = data_dict.get("dataset_id", "")
+            chunk["speaker_id"] = data_dict.get("speaker_id", "")
+            
+            batch.append(chunk)
 
         if len(batch) >= batch_size:
             _process_batch(graph, batch, max_workers)
