@@ -10,8 +10,8 @@ graph TD
 
     subgraph 2. Processing & Alignment Layer
         Py1 --> VAD[Silero VAD\nSplit chunks 5-15s]
-        VAD --> WX[WhisperX\nASR & Forced Alignment]
-        WX --> Eval[AI Quality Gate\nWER Check < 15%]
+        VAD --> Vosk[Vosk\nASR & Word Alignment]
+        Vosk --> Eval[AI Quality Gate\nWER Check < 15%]
     end
 
     subgraph 3. Storage & DB Layer
@@ -26,13 +26,13 @@ graph TD
 
     LG[LangGraph Orchestrator] -.- Py1
     LG -.- VAD
-    LG -.- WX
+    LG -.- Vosk
     LG -.- Eval
 ```
 
 ## 1. Tech Stack Overview
 - **Orchestration:** LangGraph (Python)
-- **Audio Processing:** Hugging Face `datasets`, `silero-vad`, `whisperx` (`faster-whisper`), `jiwer`
+- **Audio Processing:** Hugging Face `datasets`, `silero-vad`, `vosk`, `jiwer`
 - **Database & Storage:** Supabase (PostgreSQL, Storage) - Free Tier
 - **Frontend / HITL UI:** React (Vite), TailwindCSS, `wavesurfer.js` (v7+)
 - **Hosting:** Vercel (Frontend), Supabase Cloud (Backend)
@@ -48,9 +48,9 @@ graph TD
 
 ## 3. Processing & Alignment Layer (Python)
 - **VAD (Voice Activity Detection):** `silero-vad`. Strip silence. Split stream -> 5-15s chunks.
-- **ASR & Alignment:** `whisperx` (`faster-whisper` backend).
+- **ASR & Alignment:** `vosk`.
   - Transcribe chunks.
-  - Run phoneme alignment -> exact word-level timestamps in seconds (start/end floats).
+  - Extract word-level timestamps in seconds (start/end floats).
 - **AI Quality Gate (AI-as-a-Judge):** `jiwer` library.
   - Calculate WER (Word Error Rate) vs original LibriTTS-R text.
   - **Rule:** `if WER > 15% -> discard chunk`. Skips bad data, saves human time.
@@ -59,8 +59,8 @@ graph TD
 
 ## 4. Orchestration & Storage Layer
 - **Workflow Orchestrator:** `langgraph`. Stateful compiled graph.
-  - **Nodes Flow:** `fetch_hf_stream` -> `process_vad` -> `align_whisperx` -> `evaluate_wer` -> `insert_db`.
-  - **Error Handling:** LangGraph graph includes an `on_error` edge. If any node (VAD, WhisperX, upload) throws, the chunk is logged with the error reason and skipped — the pipeline continues to the next item in the stream. Discarded chunks (WER > 15%) are silently dropped (not stored) since the source dataset is always re-streamable.
+  - **Nodes Flow:** `fetch_hf_stream` -> `process_vad` -> `transcribe_vosk` -> `evaluate_wer` -> `insert_db`.
+  - **Error Handling:** LangGraph graph includes an `on_error` edge. If any node (VAD, Vosk, upload) throws, the chunk is logged with the error reason and skipped — the pipeline continues to the next item in the stream. Discarded chunks (WER > 15%) are silently dropped (not stored) since the source dataset is always re-streamable.
   - **Concurrency:** Pipeline processes chunks sequentially by default (CPU-bound). Batch size and parallelism can be tuned via environment variables (`BATCH_SIZE`, `MAX_WORKERS`) based on available resources and Supabase free-tier API rate limits (~500 req/min).
 - **Database & Object Storage:** Supabase (PostgreSQL + S3-compatible storage).
 - **Interaction:** `supabase-py`. Upload audio chunk to Storage, save metadata to DB.
@@ -90,7 +90,7 @@ graph TD
 ## 6. Deployment & Development Model
 - **Pattern: Decoupled Monorepo.** The frontend and backend are completely decoupled services that only interact via Supabase (Database/Storage). This is not a classic Monolith, but closer to a lightweight Microservices event-driven model.
 - **Docker Packaging:** 
-  - **Backend (Python):** Highly recommended and necessary. Python AI environments (PyTorch, WhisperX, FFmpeg) are incredibly complex to standardize across OSes. Docker ensures the ML environment is strictly isolated and reproducible. Runs on CPU (GPU optional for faster throughput).
+  - **Backend (Python):** Highly recommended and necessary. Python AI environments (PyTorch, Vosk, FFmpeg) are incredibly complex to standardize across OSes. Docker ensures the ML environment is strictly isolated and reproducible. Runs on CPU (GPU optional for faster throughput).
   - **Frontend (React/Vite):** Optional for development (`npm run dev` is sufficient), but recommended using standard Dockerfiles for production parity. 
 - **Tooling:** Use `docker-compose.yml` at the root directory to spin up the entire pipeline seamlessly.
 

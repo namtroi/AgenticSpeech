@@ -14,7 +14,7 @@ def mock_pipeline_nodes(monkeypatch):
     mock_insert = MagicMock(return_value={"pass": True})
 
     # We patch the actual python modules so Graph imports the mocks
-    monkeypatch.setattr("src.graph.align_whisperx", mock_whisperx)
+    monkeypatch.setattr("src.graph.transcribe_vosk", mock_whisperx)
     monkeypatch.setattr("src.graph.evaluate_wer", mock_wer)
     monkeypatch.setattr("src.graph.insert_db", mock_insert)
 

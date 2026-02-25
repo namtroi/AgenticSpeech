@@ -24,6 +24,6 @@ def fetch_hf_stream() -> Iterator[Dict[str, Any]]:
             "audio_array": audio_arr,
             "sample_rate": 16000,
             "original_text": item.get("text_normalized", ""),
-            "dataset_id": "parler-tts/libritts_r",
+            "dataset_id": "mythicinfinity/libritts",
             "speaker_id": str(item.get("speaker_id", "")),
         }

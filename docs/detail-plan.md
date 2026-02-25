@@ -36,7 +36,7 @@
 
 ### Checklist
 - [x] Monorepo dirs created (`backend/`, `frontend/`, `docs/`)
-- [x] `requirements.txt` w/ pinned deps (datasets, silero-vad, whisperx, jiwer, langgraph, supabase)
+- [x] `requirements.txt` w/ pinned deps (datasets, silero-vad, vosk, jiwer, langgraph, supabase)
 - [x] `package.json` w/ deps (react, vite, tailwindcss, wavesurfer.js, @supabase/supabase-js, vitest)
 - [x] Supabase project live, keys in `.env`
 - [x] DB migration executed — table, enum, indexes, trigger, RLS all applied
@@ -81,18 +81,18 @@
 
 ---
 
-## Phase 3: WhisperX Alignment Node
-
+## Phase 3: Vosk Transcription Node
+   
 **Goal:** Transcribe chunks, get word-level timestamps (seconds).
-
+   
 ### Steps
-1. **TEST FIRST:** `backend/tests/test_align_whisperx.py` — mock whisperx model. Assert output `{ aligned_words: [{ word, start, end, confidence }], transcribed_text }`. Assert structure matches `aligned_text_with_timestamps` JSONB contract.
-2. `backend/src/nodes/align_whisperx.py` — load whisperx model, transcribe chunk, run alignment.
+1. **TEST FIRST:** `backend/tests/test_transcribe_vosk.py` — mock vosk KaldiRecognizer. Assert output `{ aligned_words: [{ word, start, end, confidence }], transcribed_text }`. Assert structure matches `aligned_text_with_timestamps` JSONB contract.
+2. `backend/src/nodes/transcribe_vosk.py` — load vosk model, transcribe chunk, parse words.
 3. Return output matching test contract. Run tests, make green.
-
+   
 ### Checklist
-- [x] `test_align_whisperx.py` written & passing (mocked models)
-- [x] WhisperX loads natively locally.
+- [x] `test_transcribe_vosk.py` written & passing (mocked recognizer)
+- [x] Vosk loads natively locally.
 - [x] Result dictionary includes JSONB format array `aligned_words` of `[{ word, start, end, confidence }]`
 - [x] Output matches `aligned_text_with_timestamps` JSONB contract
 
@@ -144,10 +144,10 @@
 **Goal:** Wire all nodes into compiled stateful graph w/ error handling.
 
 ### Steps
-1. **TEST FIRST:** `backend/tests/test_graph.py` — test happy path (fetch->vad->whisperx->wer pass->insert). Test WER fail path (skips insert). Test error path (node throws -> log + skip -> next chunk). Test env var `BATCH_SIZE`/`MAX_WORKERS` respected.
+1. **TEST FIRST:** `backend/tests/test_graph.py` — test happy path (fetch->vad->vosk->wer pass->insert). Test WER fail path (skips insert). Test error path (node throws -> log + skip -> next chunk). Test env var `BATCH_SIZE`/`MAX_WORKERS` respected.
 2. `backend/src/graph.py`:
    - Define `PipelineState` TypedDict (carries data between nodes).
-   - Add nodes: `fetch_hf_stream` -> `process_vad` -> `align_whisperx` -> `evaluate_wer` -> conditional edge (pass/fail) -> `insert_db`.
+   - Add nodes: `fetch_hf_stream` -> `process_vad` -> `transcribe_vosk` -> `evaluate_wer` -> conditional edge (pass/fail) -> `insert_db`.
    - Add `on_error` edge: log error, skip chunk, continue stream.
 3. Add env var support: `BATCH_SIZE`, `MAX_WORKERS`.
 4. `backend/src/main.py` — entry point. Load env, compile graph, run.
@@ -157,7 +157,7 @@
 - [x] `test_graph.py` written & passing
 - [x] `PipelineState` TypedDict defined w/ all intermediate fields
 - [x] Graph compiles without error
-- [x] Happy path: fetch -> vad -> whisperx -> wer pass -> insert
+- [x] Happy path: fetch -> vad -> vosk -> wer pass -> insert
 - [x] WER fail path: evaluate_wer -> skip (no insert)
 - [x] Error path: any node throws -> log + skip -> next chunk
 - [x] `BATCH_SIZE` / `MAX_WORKERS` env vars respected
@@ -278,7 +278,7 @@
 ## Implementation Order & Dependencies
 
 ```
-Phase 0 (Scaffold) ─┬─> Phase 1 (Fetch) ──> Phase 2 (VAD) ──> Phase 3 (WhisperX) ──> Phase 4 (WER) ──> Phase 5 (DB Insert) ──> Phase 6 (LangGraph)
+Phase 0 (Scaffold) ─┬─> Phase 1 (Fetch) ──> Phase 2 (VAD) ──> Phase 3 (Vosk) ──> Phase 4 (WER) ──> Phase 5 (DB Insert) ──> Phase 6 (LangGraph)
                      │
                      └─> Phase 7 (Frontend Setup) ──> Phase 8 (HITL UI)
                      │

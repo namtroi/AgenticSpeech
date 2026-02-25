@@ -26,8 +26,8 @@ def mock_hf_dataset(monkeypatch):
         "id": "1234_5678",
     }
 
-    def mock_load_dataset(path, split, streaming):
-        assert path == "parler-tts/libritts_r"
+    def mock_load_dataset(path, split, streaming, **kwargs):
+        assert path == "mythicinfinity/libritts"
         assert streaming is True
         return MockIterableDataset([dummy_item])
 
@@ -46,7 +46,7 @@ def test_fetch_hf_stream(mock_hf_dataset):
     assert "speaker_id" in first_item
 
     assert isinstance(first_item["audio_array"], np.ndarray)
-    assert first_item["sample_rate"] == 24000
+    assert first_item["sample_rate"] == 16000
     assert first_item["original_text"] == "Hello world"
-    assert first_item["dataset_id"] == "parler-tts/libritts_r"
+    assert first_item["dataset_id"] == "mythicinfinity/libritts"
     assert first_item["speaker_id"] == "1234"

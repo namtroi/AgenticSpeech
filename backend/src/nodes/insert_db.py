@@ -58,7 +58,10 @@ def insert_db(data: Dict[str, Any]) -> Dict[str, Any]:
         "speaker_id": str(data.get("speaker_id", "")),
         "audio_url": public_url,
         "original_text": data.get("original_text", ""),
-        "aligned_text_with_timestamps": data.get("aligned_words", []),
+        "aligned_text_with_timestamps": {
+            "transcribed_text": data.get("transcribed_text", ""),
+            "aligned_words": data.get("aligned_words", []),
+        },
         "wer_score": data.get("wer_score", 0.0),
         "duration": data.get("duration", 0.0),
         "status": "pending_review",  # Explicitly queue for HITL UI

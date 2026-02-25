@@ -13,7 +13,7 @@ Source of truth for pipeline state and metadata. Drives HITL UI via Supabase JS 
 | `speaker_id` | `text` | NULL | Speaker identifier from LibriTTS-R (useful for speaker-conditioned TTS). |
 | `audio_url` | `text` | NOT NULL | Public URL to `.wav` file in Supabase Storage. |
 | `original_text` | `text` | NOT NULL | Ground truth text from source dataset. |
-| `aligned_text_with_timestamps`| `jsonb` | NOT NULL | WhisperX alignment output (see format below). |
+| `aligned_text_with_timestamps`| `jsonb` | NOT NULL | Vosk alignment output (see format below). |
 | `wer_score` | `real` (Float)| NOT NULL | Word Error Rate computed by `jiwer` (0.0 to 1.0). |
 | `duration` | `real` (Float)| NOT NULL | Audio chunk duration in seconds (5.0 - 15.0). |
 | `status` | `chunk_status` | DEFAULT `'pending_review'` | Enum state. |
@@ -86,7 +86,7 @@ CREATE POLICY "Allow service_role insert"
     "word": "The",       // Extracted word text
     "start": 0.150,      // Start time in seconds (float)
     "end": 0.320,        // End time in seconds (float)
-    "confidence": 0.99   // WhisperX confidence score (0.0 - 1.0)
+    "confidence": 0.99   // Vosk confidence score (0.0 - 1.0)
   },
   {
     "word": "quick",

@@ -52,7 +52,10 @@ export function useChunkReview() {
       // save happens prior to approve.
       const { error: sbError } = await supabase
         .from('speech_chunks')
-        .update({ status: 'approved' })
+        .update({
+          status: 'approved',
+          aligned_text_with_timestamps: currentChunk.aligned_text_with_timestamps
+        })
         .eq('id', currentChunk.id)
 
       if (sbError) throw new Error(sbError.message)

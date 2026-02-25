@@ -11,17 +11,17 @@
 ### 2. Processing & Alignment Layer (Python)
 
 - **Voice Activity Detection (VAD):** Use `silero-vad` (PyTorch). It is the fastest and most accurate open-source VAD. Use it to strip absolute silence and split the audio stream into 5 to 15-second chunks.
-- **ASR & Forced Alignment:** Use `whisperx` (which runs on the highly optimized `faster-whisper` backend).
-- Pass the VAD chunks through WhisperX to generate transcriptions.
-- Use its built-in phoneme alignment models to extract exact word-level timestamps (start and end times in seconds as floats).
+- **ASR & Word Alignment:** Use `vosk`.
+- Pass the VAD chunks through Vosk to generate transcriptions.
+- Use its built-in word details to extract exact word-level timestamps (start and end times in seconds as floats).
 
-- **Automated Quality Gate (AI-as-a-Judge):** Use the `jiwer` Python library to calculate the Word Error Rate (WER) by comparing the WhisperX output against the original LibriTTS-R text.
+- **Automated Quality Gate (AI-as-a-Judge):** Use the `jiwer` Python library to calculate the Word Error Rate (WER) by comparing the Vosk output against the original LibriTTS-R text.
 - Rule: If WER > 15%, automatically discard the chunk to save human review time.
 
 ### 3. Orchestration & Database Layer
 
 - **Workflow Orchestrator:** Use `langgraph` to construct the entire Python pipeline as a stateful, compiled graph.
-- Define nodes for the workflow: `fetch_huggingface_stream` -> `process_silero_vad` -> `align_whisperx` -> `evaluate_wer` -> `insert_to_db`.
+- Define nodes for the workflow: `fetch_huggingface_stream` -> `process_silero_vad` -> `transcribe_vosk` -> `evaluate_wer` -> `insert_to_db`.
 
 - **Database & Backend:** Use `supabase` (PostgreSQL) via the `supabase-py` client.
 - Store metadata in a `speech_chunks` table containing: `id` (UUID), `dataset_id`, `audio_url` (upload audio chunks to Supabase Storage), `original_text`, `aligned_text_with_timestamps` (JSONB format), `wer_score` (Float), and `status` (Enum: 'pending_review', 'approved', 'rejected').

@@ -2,11 +2,10 @@ from typing import TypedDict, Any, List, Dict
 from langgraph.graph import StateGraph, START, END
 
 # Import actual pipeline execution nodes
-from src.nodes.align_whisperx import align_whisperx
+from src.nodes.transcribe_vosk import transcribe_vosk
 from src.nodes.evaluate_wer import evaluate_wer
 from src.nodes.insert_db import insert_db
 
-# Quality Gate (WER)
 # Quality Gate (WER)
 
 # pass is a reserved keyword, but used heavily as a dict key by nodes.
@@ -51,18 +50,18 @@ def route_quality_gate(state: PipelineState) -> str:
 def get_compiled_graph():
     """
     Constructs and compiles the `StateGraph` object managing traversal
-    from Start -> VAD -> WhisperX -> WER (Conditional Branch) -> Insert DB
+    from Start -> VAD -> Vosk -> WER (Conditional Branch) -> Insert DB
     """
     builder = StateGraph(PipelineState)
 
     # Define Nodes
-    builder.add_node("align_whisperx", align_whisperx)
+    builder.add_node("transcribe_vosk", transcribe_vosk)
     builder.add_node("evaluate_wer", evaluate_wer)
     builder.add_node("insert_db", insert_db)
 
     # Define primary linear traversal vectors
-    builder.add_edge(START, "align_whisperx")
-    builder.add_edge("align_whisperx", "evaluate_wer")
+    builder.add_edge(START, "transcribe_vosk")
+    builder.add_edge("transcribe_vosk", "evaluate_wer")
 
     # Conditional branching logic terminating off `pass` boolean flag
     builder.add_conditional_edges(

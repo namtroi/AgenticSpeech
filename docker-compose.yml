@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build:
@@ -26,3 +24,14 @@ services:
     environment:
       - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/tests:/app/tests
+    command: ["python", "-m", "pytest", "tests/", "-v"]
+    profiles:
+      - test

@@ -100,7 +100,10 @@ describe('useChunkReview', () => {
       await result.current.approve()
     })
 
-    expect(mockUpdate).toHaveBeenCalledWith({ status: 'approved' })
+    expect(mockUpdate).toHaveBeenCalledWith({
+      status: 'approved',
+      aligned_text_with_timestamps: mockChunk.aligned_text_with_timestamps
+    })
     // Assert 2 calls to select (1 initial, 1 after approve)
     expect(mockSelect).toHaveBeenCalledTimes(2)
   })

@@ -87,7 +87,10 @@ def test_insert_db_success(mock_uuid, mock_supabase):
         == "https://mock.supabase.co/storage/v1/object/public/audio_chunks/test_ds/fake_uuid.wav"
     )
     assert insert_payload["original_text"] == "Hello world."
-    assert insert_payload["aligned_text_with_timestamps"] == data["aligned_words"]
+    assert insert_payload["aligned_text_with_timestamps"] == {
+        "transcribed_text": data["transcribed_text"],
+        "aligned_words": data["aligned_words"],
+    }
     assert insert_payload["wer_score"] == 0.0
     assert insert_payload["duration"] == 2.0
     assert insert_payload["status"] == "pending_review"
