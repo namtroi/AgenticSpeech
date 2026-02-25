@@ -50,16 +50,16 @@ function App() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col md:flex-row gap-6 relative">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col lg:flex-row gap-6 relative items-start">
         {!currentChunk && !loading && (
-          <div className="absolute inset-0 flex items-center justify-center flex-col z-10">
+          <div className="flex-1 flex flex-col items-center justify-center p-12 bg-white rounded-lg border shadow-sm z-10 w-full mb-6 relative">
             <p className="text-gray-500 text-lg">No audio chunks pending review.</p>
             <p className="text-gray-400 text-sm mt-2">Check back later once the backend ingress is populated.</p>
           </div>
         )}
 
         {/* Content Render Tree */}
-        <div className={`flex-1 flex flex-col ${!currentChunk ? 'opacity-20 pointer-events-none filter blur-sm transition-all duration-300' : ''}`}>
+        <div className={`flex-1 w-full min-w-0 flex flex-col space-y-4 ${!currentChunk ? 'opacity-20 pointer-events-none filter blur-sm transition-all duration-300' : ''}`}>
           {currentChunk && (
             <WaveformPlayer 
               chunk={currentChunk} 
@@ -68,7 +68,7 @@ function App() {
           )}
         </div>
         
-        <div className={`w-full md:w-80 flex-shrink-0 ${!currentChunk ? 'opacity-20 pointer-events-none filter blur-sm transition-all duration-300' : ''}`}>
+        <div className={`w-full lg:w-96 flex-shrink-0 ${!currentChunk ? 'opacity-20 pointer-events-none filter blur-sm transition-all duration-300' : ''}`}>
           {currentChunk && (
             <ReviewControls 
               chunk={currentChunk}

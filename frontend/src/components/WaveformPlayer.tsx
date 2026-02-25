@@ -35,7 +35,6 @@ export const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
       barRadius: 2,
       height: 128,
       normalize: true,
-      minPxPerSec: 100,
     })
     
     // 2. Register Regions Plugin
@@ -46,18 +45,33 @@ export const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
     ws.load(chunk.audio_url)
 
     // Wait until audio buffer finishes decoding before painting word boxes
-    ws.on('ready', () => {
-      wsRegions.clearRegions()
-      localWordsRef.current = [...chunk.aligned_text_with_timestamps.aligned_words]
+      ws.on('ready', () => {
+        wsRegions.clearRegions()
+        
+        // Safety check to ensure we map correctly when the backend dumps an array or an object wrapper
+        const wordsArray = Array.isArray(chunk.aligned_text_with_timestamps) 
+          ? chunk.aligned_text_with_timestamps 
+          : chunk.aligned_text_with_timestamps.aligned_words || chunk.aligned_text_with_timestamps;
+          
+        localWordsRef.current = Array.isArray(wordsArray) ? [...wordsArray] : [];
 
       localWordsRef.current.forEach((word, index) => {
         // Exclude completely broken chunks
         if (word.end <= word.start) return
 
+        // Create an HTML label to prevent text overflow from breaking the wave flex renderer
+        const contentEl = document.createElement('div')
+        contentEl.textContent = word.word
+        contentEl.style.overflow = 'hidden'
+        contentEl.style.textOverflow = 'ellipsis'
+        contentEl.style.whiteSpace = 'nowrap'
+        contentEl.style.fontSize = '11px'
+        contentEl.style.padding = '2px'
+
         wsRegions.addRegion({
           start: word.start,
           end: word.end,
-          content: word.word,
+          content: contentEl,
           color: 'rgba(59, 130, 246, 0.2)', // Tailwind blue-500 @ 20%
           drag: true,
           resize: true,
@@ -68,6 +82,8 @@ export const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
 
     // Listen to Region edge dragging and sync back upstream
     wsRegions.on('region-updated', (region) => {
+      if (!region) return
+      
       const idx = parseInt(region.id)
       if (isNaN(idx)) return
 
@@ -107,10 +123,8 @@ export const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
   return (
     <div className="w-full flex flex-col space-y-4">
       {/* Audio Visualization Box */}
-      <div 
-        className="w-full bg-white border rounded-lg shadow-sm p-4 h-[200px] flex items-center justify-center overflow-hidden"
-      >
-        <div ref={waveformRef} className="w-full" />
+      <div className="w-full bg-white border rounded-lg shadow-sm p-4 overflow-hidden relative min-h-[160px]">
+        <div ref={waveformRef} className="w-full h-full" />
       </div>
       
       {/* Transcription Reference Panel */}
@@ -128,7 +142,7 @@ export const WaveformPlayer: React.FC<WaveformPlayerProps> = ({
           Whisper Transcribed Text
         </h3>
         <p className="text-gray-900 text-lg leading-relaxed bg-blue-50/50 p-3 rounded border border-blue-100">
-          {chunk.aligned_text_with_timestamps.transcribed_text}
+          {chunk.aligned_text_with_timestamps.transcribed_text || chunk.original_text}
         </p>
       </div>
     </div>
